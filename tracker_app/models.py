@@ -1,12 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class MyAccountManager(BaseUserManager):
 
     def create_user(self, email, password=None, **extra_fields):
 
+        if not email:
+            raise ValueError("User must enter Email Address")
         if not email:
             raise ValueError("User must enter Email Address")
         user = self.model(email=self.normalize_email(email), **extra_fields)
@@ -64,38 +67,44 @@ class MealType(models.Model):
          return self.meal_name
 
 
-class FoodList(models.Model):
+class Profile(models.Model):
+
+    user = models.OneToOneField(UserData, on_delete=models.CASCADE)
+    daily_calories = models.IntegerField(null=True)
+    goal_weight = models.FloatField(null=True)
+
+    def __str__(self):
+        return str(self.user.name)
+
+
+@receiver(post_save, sender=UserData)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+
+class Weight(models.Model):
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    weight = models.FloatField()
+    date_recorded = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {str(self.weight)} - {self.date_recorded}"
+
+
+class Food(models.Model):
 
     food_name = models.CharField(max_length=100)
     meal_type = models.ManyToManyField(MealType)
     calorie = models.DecimalField(max_digits=5, default=0, decimal_places=2)
     quantity = models.IntegerField(default=1, null=True, blank=True)
     date_eaten = models.DateField(auto_now_add=True, null=True)
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.food_name
+        return f"{self.food_name} - {self.date_eaten}"
 
 
-class Profile(models.Model):
-
-    userName = models.OneToOneField(UserData, on_delete=models.CASCADE, null=True)
-    daily_calories = models.IntegerField(null=True)
-    goal_weight = models.FloatField(null=True)
-
-    def __str__(self):
-        return str(self.userName.name)
-
-    def post_save_user_model_receiver(sender, instance, created, *args, **kwargs):
-        if created:
-            Profile.objects.create(user=instance)
-        else:
-            pass
-
-
-class Weight(models.Model):
-    userName = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    weight = models.FloatField()
-    date_recorded = models.DateField(auto_now_add=True)
 
 
 

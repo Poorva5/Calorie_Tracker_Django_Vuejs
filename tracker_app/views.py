@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view
 from .models import Profile, Weight
 from datetime import datetime as dt
 from .serializers import WeightSerializer
+from rest_framework import generics
 
 
 class RegisterView(APIView):
@@ -16,32 +17,20 @@ class RegisterView(APIView):
         return Response(serializer.data)
 
 
-@api_view(['GET', 'POST'])
-def get_user_weight(request, id):
-    today = dt.today
-    profile = Profile.objects.get(id=id)
+class WeightView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Weight.objects.all()
+    serializer_class = WeightSerializer
 
-    if request.method == 'GET':
-        try:
-            user_weight = Weight.objects.get(id=id, date_recored=today)
-            return Response({'Weight' : user_weight.weight})
-        except:
-            return Response({'Error': 'Weight Recorder does not exists', "weight": 0})
 
-    if request.method == 'POST':
+class WeightCreateView(generics.ListCreateAPIView):
+    queryset = Weight.objects.all()
+    serializer_class = WeightSerializer
 
-        if Weight.objects.filter(id=id, date_recorder=today).exists():
-            user_weight = Weight.objects.get(id=id, date_recorded=today)
 
-            serializer = WeightSerializer(user_weight, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(user=profile)
+class FoodLogViewSet(generics.ListAPIView):
+    
 
-        else:
-            serializer = WeightSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(user=profile)
-        return Response({"message": "Updated user weight", "weight": serializer.data})
+
 
 
 

@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import UserData, FoodList, Profile, MealType, Weight
+from .models import UserData, Food, Profile, MealType, Weight
 
 admin.site.register(UserData)
 
-admin.site.register(FoodList)
+admin.site.register(Food)
 
 admin.site.register(MealType)
 

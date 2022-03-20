@@ -32,13 +32,15 @@ AUTH_USER_MODEL = 'tracker_app.UserData'
 # Application definition
 
 INSTALLED_APPS = [
+
+    'tracker_app.apps.TrackerAppConfig',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tracker_app',
     'rest_framework',
     'rest_framework_simplejwt',
 ]
